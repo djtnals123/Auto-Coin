@@ -1,4 +1,5 @@
 # from sched import scheduler
+import configparser
 from faulthandler import disable
 import threading
 import time
@@ -14,23 +15,36 @@ from util.validator import Validator
 class AutoTradeFrame(Frame):
     def __init__(self, master):
         Frame.__init__(self, master)
+        self.init_config()
+        self.init_ui()
+        self.init_thread()
+        self.init_upbit()
+        
+        
+    def init_ui(self):
         ticker_lbl = Label(self, text='종목')
         fee_lbl = Label(self, text='수수료')
         k_lbl = Label(self, text='k')
         ma_lbl = Label(self, text='ma')
+        access_key_lbl = Label(self, text='액세스키')
+        secret_key_lbl = Label(self, text='시크릿키')
         self.k_entry = Entry(self, validate='key', vcmd=(self.register(Validator.isfloat), '%P'), width=10,
-                        textvariable=StringVar(value='0.5'))
-        self.fee_entry = Entry(self, validate='key', vcmd=(self.register(Validator.isfloat), '%P'), width=10,
-                          textvariable=StringVar(value='0.05'))
-        self.ma_entry = Entry(self, validate='key', vcmd=(self.register(Validator.isdigit), '%P'), width=10,
-                         textvariable=StringVar(value='5'))
+                        textvariable=StringVar(value=self.config['auto_trade']['k']))
+        self.fee_entry = Entry(self, validate='key', vcmd=(self.register(Validator.isfloat), '%P'), width=10, 
+                          textvariable=StringVar(value=self.config['auto_trade']['fee']))
+        self.ma_entry = Entry(self, validate='key', vcmd=(self.register(Validator.isdigit), '%P'), width=10, 
+                         textvariable=StringVar(value=self.config['auto_trade']['ma']))
+        self.access_key_entry = Entry(self, validate='key', vcmd=(self.register(Validator.isdigit), '%P'), width=10, 
+                         textvariable=StringVar(value=self.config['auto_trade']['access_key']))
+        self.secret_key_entry = Entry(self, validate='key', vcmd=(self.register(Validator.isdigit), '%P'), width=10, 
+                         textvariable=StringVar(value=self.config['auto_trade']['secret_key']))
         tickers = pyupbit.get_tickers(fiat="KRW")
         self.tickers_cbo = ttk.Combobox(self, values = tickers, width=10)
-        self.tickers_cbo.set(tickers[0])
+        self.tickers_cbo.set(self.config['auto_trade']['ticker'])
         self.run_btn = Button(self, text='시작', command=self.run)
         self.stop_btn = Button(self, text='중단', command=self.do_stop)
         self.stop_btn['state'] = DISABLED
-        self.prev_btn = Button(self, text='뒤로가기', command=lambda: master.switch_frame(frames.MainFrame))
+        self.prev_btn = Button(self, text='뒤로가기', command=lambda: self.master.switch_frame(frames.MainFrame))
         
         ticker_lbl.grid(column=0, row=0, sticky=E)
         self.tickers_cbo.grid(column=1, row=0, sticky=W)
@@ -43,12 +57,48 @@ class AutoTradeFrame(Frame):
         
         ma_lbl.grid(column=0, row=4, sticky=E)
         self.ma_entry.grid(column=1, row=4, sticky=W)
-        self.prev_btn.grid(column=0, row=5)
-        self.run_btn.grid(column=1, row=5, sticky=E)
-        self.stop_btn.grid(column=2, row=5)
         
+        access_key_lbl.grid(column=0, row=5, sticky=E)
+        self.access_key_entry.grid(column=1, row=5, sticky=W)
+        
+        secret_key_lbl.grid(column=0, row=6, sticky=E)
+        self.secret_key_entry.grid(column=1, row=6, sticky=W)
+        
+        self.prev_btn.grid(column=0, row=7)
+        self.run_btn.grid(column=1, row=7, sticky=E)
+        self.stop_btn.grid(column=2, row=7)
+        
+        
+    def init_config(self):
+        config = configparser.ConfigParser()
+        config.read('config.ini')
+
+        if(not config.has_section('auto_trade')):
+            config['auto_trade'] = {}
+        if(not 'ticker' in config['auto_trade']):
+            config['auto_trade']['ticker'] = 'KRW-BTC'
+        if(not 'fee' in config['auto_trade']):
+            config['auto_trade']['fee'] = str(0.5)
+        if(not 'ma' in config['auto_trade']):
+            config['auto_trade']['ma'] = str(5)
+        if(not 'k' in config['auto_trade']):
+            config['auto_trade']['k'] = str(0.5)
+        if(not 'access_key' in config['auto_trade']):
+            config['auto_trade']['access_key'] = 'your access key'
+        if(not 'secret_key' in config['auto_trade']):
+            config['auto_trade']['secret_key'] = 'your secret key'
+            
+        with open('config.ini', 'w') as configfile:
+            config.write(configfile)
+        self.config = config
+        
+        
+    def init_thread(self):
         self.thread = threading.Thread(target=self.job)
         self.thread.daemon = True
+        
+        
+    def init_upbit(self):
         access_key = "your_access_key"
         secret_key = "your_secret_key"
         self.upbit = pyupbit.Upbit(access_key, secret_key)

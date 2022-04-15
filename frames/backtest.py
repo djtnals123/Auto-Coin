@@ -1,4 +1,5 @@
 
+import configparser
 import datetime
 from msilib.schema import ComboBox
 from tkinter import *
@@ -15,6 +16,11 @@ from util.validator import Validator
 class BacktestFrame(Frame):
     def __init__(self, master):
         Frame.__init__(self, master)
+        self.init_config()
+        self.init_ui()
+
+        
+    def init_ui(self):
         ticker_lbl = Label(self, text='종목')
         term_lbl = Label(self, text='기간')
         fee_lbl = Label(self, text='수수료')
@@ -23,17 +29,16 @@ class BacktestFrame(Frame):
         self.cal1 = DateEntry(self, selectmode='day', date_pattern='yyyy-mm-dd', width=10)
         self.cal2 = DateEntry(self, selectmode='day', date_pattern='yyyy-mm-dd', width=10)
         self.k_entry = Entry(self, validate='key', vcmd=(self.register(Validator.isfloat), '%P'), width=10,
-                        textvariable=StringVar(value='0.5'))
+                        textvariable=StringVar(value=self.config['backtest']['k']))
         self.fee_entry = Entry(self, validate='key', vcmd=(self.register(Validator.isfloat), '%P'), width=10, 
-                          textvariable=StringVar(value='0.05'))
+                          textvariable=StringVar(value=self.config['backtest']['fee']))
         self.ma_entry = Entry(self, validate='key', vcmd=(self.register(Validator.isdigit), '%P'), width=10, 
-                         textvariable=StringVar(value='5'))
+                         textvariable=StringVar(value=self.config['backtest']['ma']))
         run_btn = Button(self, text='분석 시작', command=self.run)
-        prev_btn = Button(self, text='뒤로가기', command=lambda: master.switch_frame(frames.MainFrame))
+        prev_btn = Button(self, text='뒤로가기', command=lambda: self.master.switch_frame(frames.MainFrame))
         tickers = pyupbit.get_tickers(fiat="KRW")
         self.tickers_cbo = ttk.Combobox(self, values = tickers, width=10)
-        self.tickers_cbo.set(tickers[0])
-        
+        self.tickers_cbo.set(self.config['backtest']['ticker'])
         
         ticker_lbl.grid(column=0, row=0, sticky=E)
         self.tickers_cbo.grid(column=1, row=0, sticky=W)
@@ -52,6 +57,26 @@ class BacktestFrame(Frame):
         self.ma_entry.grid(column=1, row=4, sticky=W)
         prev_btn.grid(column=0, row=5, sticky=E)
         run_btn.grid(column=2, row=5, sticky=E)
+        
+        
+    def init_config(self):
+        config = configparser.ConfigParser()
+        config.read('config.ini')
+
+        if(not config.has_section('backtest')):
+            config['backtest'] = {}
+        if(not 'ticker' in config['backtest']):
+            config['backtest']['ticker'] = 'KRW-BTC'
+        if(not 'fee' in config['backtest']):
+            config['backtest']['fee'] = str(0.5)
+        if(not 'ma' in config['backtest']):
+            config['backtest']['ma'] = str(5)
+        if(not 'k' in config['backtest']):
+            config['backtest']['k'] = str(0.5)
+            
+        with open('config.ini', 'w') as configfile:
+            config.write(configfile)
+        self.config = config
         
               
     def process_df(self, df:DataFrame):
