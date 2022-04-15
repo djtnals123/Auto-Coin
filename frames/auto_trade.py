@@ -111,6 +111,8 @@ class AutoTradeFrame(Frame):
         self.k_entry['state'] = DISABLED
         self.ma_entry['state'] = DISABLED
         self.fee_entry['state'] = DISABLED
+        self.access_key_entry['state'] = DISABLED
+        self.secret_key_entry['state'] = DISABLED
         self.tickers_cbo['state'] = DISABLED
         self.thread.start()
         
@@ -122,6 +124,8 @@ class AutoTradeFrame(Frame):
         self.k_entry['state'] = NORMAL
         self.ma_entry['state'] = NORMAL
         self.fee_entry['state'] = NORMAL
+        self.access_key_entry['state'] = NORMAL
+        self.secret_key_entry['state'] = NORMAL
         self.tickers_cbo['state'] = NORMAL
         self.stop = True
 
