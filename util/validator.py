@@ -5,7 +5,7 @@ class Validator:
         try:
             float(inp)
         except:
-            if inp is '':
+            if inp == '':
                 return True
             else:
                 return False
@@ -13,7 +13,7 @@ class Validator:
     
     
     def isdigit(inp: string):
-        if inp is '':
+        if inp == '':
             return True
         return inp.isdigit()
     
