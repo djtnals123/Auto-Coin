@@ -6,6 +6,7 @@ import time
 from tkinter import *
 from tkinter import ttk
 from tkinter.messagebox import showerror
+from typing import final
 from pandas import DataFrame
 import pyupbit
 import datetime as dt
@@ -19,6 +20,8 @@ class AutoTradeFrame(Frame):
         self.init_ui()
         self.init_thread()
         self.init_upbit()
+        
+        self.CONST_HOUR_9 = dt.timedelta(hours=9)
         
         
     def init_ui(self):
@@ -114,6 +117,7 @@ class AutoTradeFrame(Frame):
         self.access_key_entry['state'] = DISABLED
         self.secret_key_entry['state'] = DISABLED
         self.tickers_cbo['state'] = DISABLED
+        self.save_config()
         self.thread.start()
         
     
@@ -142,7 +146,15 @@ class AutoTradeFrame(Frame):
                 waiting_time = self.get_waiting_time()
                 time.sleep(waiting_time)
                 self.newday()
+            if(not self.is_last_df()):
+                self.process_df(self.get_ohlcv())    
             time.sleep(1)
+            
+    
+    def is_last_df(self):
+        t1 = self.df_tail.index[-1] - self.CONST_HOUR_9
+        t2 = dt.datetime.now() - self.CONST_HOUR_9
+        return t1.day == t2.day
         
     
     def newday(self):
@@ -165,6 +177,7 @@ class AutoTradeFrame(Frame):
     def get_ohlcv(self):
         ma = int(self.ma_entry.get())
         df: DataFrame = pyupbit.get_ohlcv(self.tickers_cbo.get(), count=ma+1)
+        self.last_df_date = dt.datetime.now()
         return df
     
         
@@ -195,3 +208,15 @@ class AutoTradeFrame(Frame):
         
         return waiting_time.seconds
         
+
+    def save_config(self):
+        config = self.config['auto_trade']
+        config['ticker'] = self.tickers_cbo.get()
+        config['fee'] = self.fee_entry.get()
+        config['ma'] = self.ma_entry.get()
+        config['k'] = self.k_entry.get()
+        config['access_key'] = self.access_key_entry.get()
+        config['secret_key'] = self.secret_key_entry.get()
+        
+        with open('config.ini', 'w') as configfile:
+            self.config.write(configfile)

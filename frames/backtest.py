@@ -106,6 +106,17 @@ class BacktestFrame(Frame):
         
     def run(self):
         df = self.process_df(self.get_ohlcv())
+        self.save_config()
         self.master.switch_frame(frames.BacktestResultFrame, df)
 
+
+    def save_config(self):
+        config = self.config['backtest']
+        config['ticker'] = self.tickers_cbo.get()
+        config['fee'] = self.fee_entry.get()
+        config['ma'] = self.ma_entry.get()
+        config['k'] = self.k_entry.get()
+        
+        with open('config.ini', 'w') as configfile:
+            self.config.write(configfile)
         
