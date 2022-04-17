@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 
 class BacktestResultFrame(Frame):
-    def __init__(self, master, df):
+    def __init__(self, master, df, ticker):
         Frame.__init__(self, master)
         lbf=LabelFrame(self, text="그래프")
         self.chk_list = []
@@ -28,6 +28,7 @@ class BacktestResultFrame(Frame):
         hpr_graph_btn.grid(column=0, row=1)
         prev_btn.grid(column=0, row=2)
         
+        self.ticker = ticker
         self.df = df
         
         
@@ -38,6 +39,7 @@ class BacktestResultFrame(Frame):
             
         df = self.df.loc[:,checked_boxes]
         df.plot()
+        plt.title(self.ticker)
         plt.xlabel('date')
         plt.ylabel('price')
         plt.show()   
@@ -46,6 +48,7 @@ class BacktestResultFrame(Frame):
     def view_hpr_graph(self):
         df = self.df.loc[:,['hpr']]
         df.plot()
+        plt.title(self.ticker)
         plt.xlabel('date')
         plt.ylabel('price')
         plt.show() 

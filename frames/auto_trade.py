@@ -1,12 +1,10 @@
 # from sched import scheduler
 import configparser
-from faulthandler import disable
 import threading
 import time
 from tkinter import *
 from tkinter import ttk
 from tkinter.messagebox import showerror
-from typing import final
 from pandas import DataFrame
 import pyupbit
 import datetime as dt
@@ -81,7 +79,7 @@ class AutoTradeFrame(Frame):
         if(not 'ticker' in config['auto_trade']):
             config['auto_trade']['ticker'] = 'KRW-BTC'
         if(not 'fee' in config['auto_trade']):
-            config['auto_trade']['fee'] = str(0.5)
+            config['auto_trade']['fee'] = str(0.05)
         if(not 'ma' in config['auto_trade']):
             config['auto_trade']['ma'] = str(5)
         if(not 'k' in config['auto_trade']):

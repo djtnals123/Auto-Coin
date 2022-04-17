@@ -68,7 +68,7 @@ class BacktestFrame(Frame):
         if(not 'ticker' in config['backtest']):
             config['backtest']['ticker'] = 'KRW-BTC'
         if(not 'fee' in config['backtest']):
-            config['backtest']['fee'] = str(0.5)
+            config['backtest']['fee'] = str(0.05)
         if(not 'ma' in config['backtest']):
             config['backtest']['ma'] = str(5)
         if(not 'k' in config['backtest']):
@@ -107,7 +107,7 @@ class BacktestFrame(Frame):
     def run(self):
         df = self.process_df(self.get_ohlcv())
         self.save_config()
-        self.master.switch_frame(frames.BacktestResultFrame, df)
+        self.master.switch_frame(frames.BacktestResultFrame, df, self.tickers_cbo.get())
 
 
     def save_config(self):
